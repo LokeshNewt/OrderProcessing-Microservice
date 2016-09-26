@@ -4,6 +4,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,40 +18,29 @@ import com.newt.repository.OrderRepository;
 import com.wordnik.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/ordersprocessing")
 public class OrderController {
 	
+	private static final Logger logger = Logger.getLogger(OrderController.class);
 	@Autowired
-	private OrderRepository orderRepository;
-	
+	private OrderRepository orderRepository;	
 	@Autowired
-    private Notifications notifications;
-	/*
-	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	@ApiOperation(value = "get orders1")
-    public Orders find(@PathVariable Integer id) {
-           return orderRepository.findOne(id);        
-    }
-	*/
-   
+    private Notifications notifications;   
 	
-	@PUT
-	@Produces(MediaType.APPLICATION_JSON)
-	@RequestMapping("update/{id}/{orderStatus}")
+	@RequestMapping(value = "/{id}/{orderStatus}" ,method = RequestMethod.PUT)
 	@ApiOperation(value = "put orders")
 	public Orders processOrder(@PathVariable("id") int id,@PathVariable("orderStatus") String orderStatus){
-		System.out.println("Updating Orderstatus for " + id);
-	   
+		logger.info("Updating Orderstatus for " + id);	   
 		Orders order = orderRepository.findOrdersByorderId(id);
 	 try{
       if(order.getOrderId()==id){
-	      	System.out.println("Orders is  Id is  found");
+    	  logger.info("Orders is  Id is  found");
 	    	if(order.getOrderStatus().equalsIgnoreCase("pending")){
 	    		 order.setOrderStatus("processing");
 	    		 orderRepository.save(order);
 	    		}else if(!(order.getOrderStatus().equalsIgnoreCase("pending"))){
 	    			  notifications.sendNotification("order is under processing");
-	    			System.out.println("Order is not processed....");
+	    			  logger.info("Order is not processed....");
 	    		}
 	    	}
 	  
@@ -58,7 +48,7 @@ public class OrderController {
 	 
 	else{
 	          	
-		  System.out.println("Order is not found..");
+		logger.info("Order is not found..");
 		}
 	  
 	 }catch(Exception e){e.printStackTrace();}  	    
